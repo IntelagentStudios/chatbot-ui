@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Intelagent Studios Setup Agent</title>
+<style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .setup-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      padding: 32px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    p {
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    #chat-log {
+      text-align: left;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    #chat-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 14px;
+      margin-top: 10px;
+      border-radius: 6px;
+      background: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .setup-footer {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-top: 24px;
+    }
+</style>
+</head>
+<body>
+<div class="setup-container" id="main-container">
+<h1>Intelagent Studios Setup Agent</h1>
+<p>I’ll help you generate your site key and embed your chatbot. Let’s get started.</p>
+<div id="chat-log"></div>
+<input autofocus id="chat-input" placeholder="Type your message..." type="text"/>
+<button id="send-button">Send</button>
+<div class="setup-footer">designed by Intelagent Studios</div>
+</div>
+<script>
+const sessionId = localStorage.getItem("setup_session_id") || "sess_" + Math.random().toString(36).substring(2, 10);
+localStorage.setItem("setup_session_id", sessionId);
+const siteKey = localStorage.getItem("site_key") || "site_" + Math.random().toString(36).substring(2, 10);
+localStorage.setItem("site_key", siteKey);
+
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const chatLog = document.getElementById("chat-log");
+  const message = input.value.trim();
+  if (!message) return;
+
+  chatLog.innerHTML += `<div><strong>You:</strong> ${message}</div><br>`;
+  chatLog.scrollTop = chatLog.scrollHeight;
+
+  try {
+    const response = await fetch("https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        session_id: sessionId,
+        site_key: siteKey
+      })
+    });
+
+    const data = await response.json();
+    const reply = data?.agent_message || "⚠️ No response from agent.";
+    chatLog.innerHTML += `<div><strong>Agent:</strong> ${reply}</div><br>`;
+    chatLog.scrollTop = chatLog.scrollHeight;
+  } catch (err) {
+    chatLog.innerHTML += `<div><strong>Agent:</strong> ⚠️ Couldn’t reach the setup server. Try again later.</div><br>`;
+    console.warn(err);
+  }
+
+  input.value = "";
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("chat-input");
+  const button = document.getElementById("send-button");
+
+  button.addEventListener("click", () => sendMessage());
+  input.addEventListener("keypress", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  const chatLog = document.getElementById("chat-log");
+  chatLog.innerHTML += `<div><strong>Agent:</strong> Hi, I’m your setup agent 👋<br>Unless you have any questions, please provide your website address to get started setting up your chatbot.</div><br>`;
+});
+</script>
+</body>
+</html>
