@@ -10,7 +10,7 @@ app.use(express.json());
 
 // ✅ Explicit route for Setup Agent page
 app.get('/setup', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'setup_agent_styled_updated.html'));
+  res.sendFile(path.join(__dirname, 'public', 'setup_agent.html'));
 });
 
 // Catch-all fallback
