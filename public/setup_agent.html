@@ -145,7 +145,8 @@
         const loader = document.getElementById("typing-indicator");
         if (loader) loader.remove();
 
-        const agentReply = data?.agent_message || "⚠️ No response from agent.";
+        console.log("🔍 Full response:", data);
+	const agentReply = JSON.stringify(data, null, 2);
         chatLog.innerHTML += `<div><strong>Agent:</strong> ${agentReply}</div>`;
         chatLog.scrollTop = chatLog.scrollHeight;
       } catch (err) {
