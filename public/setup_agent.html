@@ -135,7 +135,7 @@
         });
 
         const data = await response.json();
-        const agentReply = data?.agent_message || "⚠️ No response from agent.";
+        const agentReply = Array.isArray(data) ? data[0]?.agent_message : data?.agent_message || "⚠️ No response from agent.";
         const loader = document.getElementById("typing-indicator");
         if (loader) loader.remove();
         chatLog.innerHTML += `<div><strong>Agent:</strong> ${agentReply}</div>`;
