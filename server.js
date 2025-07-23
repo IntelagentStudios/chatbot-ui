@@ -17,7 +17,7 @@ app.use(express.json());
 // ✅ Proxy route to forward setup messages to the N8N webhook
 app.post('/api/setup', async (req, res) => {
   try {
-    const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook-test/setup-agent', {
+    const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body)
