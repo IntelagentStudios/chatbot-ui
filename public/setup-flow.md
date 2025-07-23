@@ -41,6 +41,7 @@ This is the official setup logic followed by the Setup Agent. It defines the exp
 - Once confirmed, the agent triggers the `GenerateSiteKey` tool
 - A secure, unique site key is generated (12–16 alphanumeric characters)
 - The domain + site key are stored in the `site_keys` Postgres table
+- Agent asks if the user wants a copy of the site key, if not move on to embed.
 
 ---
 
