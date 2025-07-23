@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Intelagent Chatbot Setup</title>
   <style>
     body {
@@ -69,7 +69,7 @@
     }
     .typing-indicator {
       display: inline-block;
-      margin-left: 10px;
+      padding-left: 10px;
     }
     .typing-indicator span {
       display: inline-block;
@@ -78,13 +78,13 @@
       margin: 0 1px;
       background: #999;
       border-radius: 50%;
-      animation: blink 2s infinite both;
+      animation: blink 1.4s infinite both;
     }
     .typing-indicator span:nth-child(2) {
-      animation-delay: 0.5s;
+      animation-delay: 0.2s;
     }
     .typing-indicator span:nth-child(3) {
-      animation-delay: 0.5s;
+      animation-delay: 0.4s;
     }
     @keyframes blink {
       0%, 80%, 100% { transform: scale(0); }
@@ -98,6 +98,13 @@
       display: block;
       margin-bottom: 3px;
     }
+    pre {
+      background: #eaeaea;
+      padding: 8px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -105,7 +112,7 @@
     <h1>Intelagent Chatbot Setup</h1>
     <p>I’ll help you connect your domain and generate your personalized chatbot key.</p>
     <div id="chat-log"></div>
-    <input id="chat-input" placeholder="Type your message..." type="text" autofocus/>
+    <input autofocus id="chat-input" placeholder="Type your message..." type="text"/>
     <button id="send-button">Send</button>
     <div class="setup-footer">powered by Intelagent Studios</div>
   </div>
@@ -134,26 +141,20 @@
           })
         });
 
-        const raw = await response.text();
-        let data;
-        try {
-          data = JSON.parse(raw);
-        } catch {
-          throw new Error("Invalid JSON: " + raw);
-        }
+        const data = await response.json();
+        const agentReply = Array.isArray(data) ? data[0]?.agent_message : data?.agent_message || "⚠️ No response from agent.";
+        const formattedReply = agentReply
+          .replace(/</g, "&lt;").replace(/>/g, "&gt;")  // escape HTML
+          .replace(/```html\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')  // format code blocks
+          .replace(/\n/g, "<br>"); // line breaks
 
         const loader = document.getElementById("typing-indicator");
         if (loader) loader.remove();
-
-        console.log("🔍 Full response:", data);
-	const agentReply = JSON.stringify(data, null, 2);
-        chatLog.innerHTML += `<div><strong>Agent:</strong> ${agentReply}</div>`;
+        chatLog.innerHTML += `<div><strong>Agent:</strong> ${formattedReply}</div>`;
         chatLog.scrollTop = chatLog.scrollHeight;
       } catch (err) {
-        const loader = document.getElementById("typing-indicator");
-        if (loader) loader.remove();
         chatLog.innerHTML += `<div><strong>Agent:</strong> ⚠️ Couldn’t reach the setup server. Try again later.</div>`;
-        console.warn("Fetch error:", err);
+        console.warn(err);
       }
 
       input.value = "";
@@ -171,7 +172,7 @@
         }
       });
 
-      document.getElementById("chat-log").innerHTML = `<div><strong>Agent:</strong> Hi, I’m your setup agent 👋<br/>Unless you have any questions, please provide your website address to get started setting up your chatbot.</div>`;
+      document.getElementById("chat-log").innerHTML = `<div><strong>Agent:</strong> Hi, I’m your setup agent 👋<br>Unless you have any questions, please provide your website address to get started setting up your chatbot.</div>`;
     });
   </script>
 </body>
