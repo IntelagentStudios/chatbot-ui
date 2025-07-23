@@ -2,136 +2,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Intelagent Studios Setup Agent</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Intelagent Chatbot Setup</title>
+  <style>
     body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f9f9f9;
-      color: #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      padding: 0;
     }
-    .setup-container {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      padding: 32px;
+    .chat-container {
       max-width: 600px;
-      width: 100%;
-      text-align: center;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 16px;
-    }
-    p {
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-    #chat-log {
-      text-align: left;
-      max-height: 300px;
+    .chat-box {
+      height: 400px;
       overflow-y: auto;
-      background: #f1f1f1;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 14px;
-      margin-bottom: 10px;
+      padding-right: 10px;
     }
-    #chat-input {
-      width: 100%;
-      padding: 10px;
-      font-size: 14px;
-      margin-top: 10px;
+    .message {
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    .user {
+      text-align: right;
+      color: #333;
+    }
+    .agent {
+      text-align: left;
+      color: #1a73e8;
+    }
+    .input-box {
+      display: flex;
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 4px;
+      font-size: 14px;
     }
     button {
-      padding: 10px 16px;
-      font-size: 14px;
-      margin-top: 10px;
-      border-radius: 6px;
-      background: #333;
+      margin-left: 10px;
+      padding: 12px 18px;
+      background-color: #1a73e8;
       color: white;
       border: none;
+      border-radius: 4px;
+      font-size: 14px;
       cursor: pointer;
     }
-    .setup-footer {
-      font-size: 12px;
-      color: #999;
-      text-align: center;
-      margin-top: 24px;
+    button:hover {
+      background-color: #155ab6;
     }
-</style>
+    .typing {
+      font-style: italic;
+      color: #999;
+      margin: 5px 0 10px;
+    }
+    footer {
+      text-align: center;
+      font-size: 12px;
+      margin-top: 40px;
+      color: #aaa;
+    }
+  </style>
 </head>
 <body>
-<div class="setup-container" id="main-container">
-<h1>Intelagent Studios Setup Agent</h1>
-<p>I’ll help you generate your site key and embed your chatbot. Let’s get started.</p>
-<div id="chat-log"></div>
-<input autofocus id="chat-input" placeholder="Type your message..." type="text"/>
-<button id="send-button">Send</button>
-<div class="setup-footer">designed by Intelagent Studios</div>
-</div>
-<script>
-const sessionId = localStorage.getItem("setup_session_id") || "sess_" + Math.random().toString(36).substring(2, 10);
-localStorage.setItem("setup_session_id", sessionId);
-const siteKey = localStorage.getItem("site_key") || "site_" + Math.random().toString(36).substring(2, 10);
-localStorage.setItem("site_key", siteKey);
 
-async function sendMessage() {
-  const input = document.getElementById("chat-input");
-  const chatLog = document.getElementById("chat-log");
-  const message = input.value.trim();
-  if (!message) return;
+  <div class="chat-container">
+    <h2>Intelagent Chatbot Setup</h2>
+    <div class="chat-box" id="chatBox">
+      <div class="message agent">Agent: Hi, I’m your setup agent 👋<br>Unless you have any questions, please provide your website address to get started setting up your chatbot.</div>
+    </div>
+    <div class="input-box">
+      <input type="text" id="userInput" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
-  chatLog.innerHTML += `<div><strong>You:</strong> ${message}</div><br>`;
-  chatLog.scrollTop = chatLog.scrollHeight;
+  <footer>
+    Intelagent Chatbot © 2025 | Built by Intelagent Studios
+  </footer>
 
-  try {
-    const response = await fetch("https://intelagentchatbotn8n.up.railway.app/webhook/setup-agent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message,
-        session_id: sessionId,
-        site_key: siteKey
-      })
-    });
+  <script>
+    const chatBox = document.getElementById('chatBox');
 
-    const data = await response.json();
-    const reply = data?.agent_message || "⚠️ No response from agent.";
-    chatLog.innerHTML += `<div><strong>Agent:</strong> ${reply}</div><br>`;
-    chatLog.scrollTop = chatLog.scrollHeight;
-  } catch (err) {
-    chatLog.innerHTML += `<div><strong>Agent:</strong> ⚠️ Couldn’t reach the setup server. Try again later.</div><br>`;
-    console.warn(err);
-  }
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      if (!message) return;
 
-  input.value = "";
-}
+      appendMessage(message, 'user');
+      input.value = '';
 
-window.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("chat-input");
-  const button = document.getElementById("send-button");
+      // Show "typing..." while waiting
+      const typingMsg = document.createElement('div');
+      typingMsg.className = 'typing agent';
+      typingMsg.textContent = 'Agent is typing...';
+      chatBox.appendChild(typingMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-  button.addEventListener("click", () => sendMessage());
-  input.addEventListener("keypress", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendMessage();
+      try {
+        const response = await fetch('https://intelagentchatbotn8n.up.railway.app/webhook/chatbot/webhook/setup-agent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            session_id: 'sess_' + Math.random().toString(36).substring(2, 10),
+            store: 'setup-agent'
+          })
+        });
+        const data = await response.json();
+
+        setTimeout(() => {
+          chatBox.removeChild(typingMsg);
+          appendMessage(data.agent_message || '[No reply]', 'agent');
+        }, 500); // Simulated thinking delay
+      } catch (err) {
+        chatBox.removeChild(typingMsg);
+        appendMessage('Sorry, there was a problem connecting to the agent.', 'agent');
+      }
     }
-  });
 
-  const chatLog = document.getElementById("chat-log");
-  chatLog.innerHTML += `<div><strong>Agent:</strong> Hi, I’m your setup agent 👋<br>Unless you have any questions, please provide your website address to get started setting up your chatbot.</div><br>`;
-});
-</script>
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.innerHTML = `${sender === 'user' ? 'You' : 'Agent'}: ${text}`;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+
 </body>
 </html>
