@@ -1,9 +1,14 @@
-const express = require('express');
-const path = require('path');
-const fetch = require('node-fetch');
-const app = express();
+import express from 'express';
+import path from 'path';
+import fetch from 'node-fetch';
+import { fileURLToPath } from 'url';
 
+const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Serve static files from /public
 app.use(express.static(path.join(__dirname, 'public')));
@@ -26,12 +31,12 @@ app.post('/api/setup', async (req, res) => {
   }
 });
 
-// ✅ Explicit route for Setup Agent page
+// ✅ Route for Setup Agent page
 app.get('/setup', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'setup_agent.html'));
 });
 
-// Catch-all fallback
+// Fallback route
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -39,4 +44,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Chatbot UI server running on port ${PORT}`);
 });
+
 
