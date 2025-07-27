@@ -338,4 +338,3 @@
   document.body.appendChild(chatButton);
   document.body.appendChild(chatBox);
 })();
-})();
