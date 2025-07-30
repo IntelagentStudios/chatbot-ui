@@ -146,7 +146,7 @@
         const data = await response.json();
         console.log("Setup response:", data); // Debug log
         
-        const agentReply = Array.isArray(data) ? data[0]?.agent_message : data?.agent_message || "⚠️ No response from agent.";
+        const agentReply = data?.agent_response || data?.chatbot_response || data?.agent_message || "⚠️ No response from agent.";
         const formattedReply = agentReply
           .replace(/</g, "&lt;").replace(/>/g, "&gt;")  // escape HTML
           .replace(/```html\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')  // format code blocks
