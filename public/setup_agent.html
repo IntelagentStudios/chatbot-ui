@@ -110,7 +110,7 @@
 <body>
   <div class="setup-container" id="main-container">
     <h1>Intelagent Chatbot Setup</h1>
-    <p>I’ll help you connect your domain and generate your personalized chatbot key.</p>
+    <p>I'll help you connect your domain and generate your personalized chatbot key.</p>
     <div id="chat-log"></div>
     <input autofocus id="chat-input" placeholder="Type your message..." type="text"/>
     <button id="send-button">Send</button>
@@ -129,6 +129,8 @@
       chatLog.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
       chatLog.innerHTML += `<div id="typing-indicator" class="typing-indicator"><span></span><span></span><span></span></div>`;
       chatLog.scrollTop = chatLog.scrollHeight;
+      
+      input.value = "";
 
       try {
         const response = await fetch("/api/setup", {
@@ -142,6 +144,8 @@
         });
 
         const data = await response.json();
+        console.log("Setup response:", data); // Debug log
+        
         const agentReply = Array.isArray(data) ? data[0]?.agent_message : data?.agent_message || "⚠️ No response from agent.";
         const formattedReply = agentReply
           .replace(/</g, "&lt;").replace(/>/g, "&gt;")  // escape HTML
@@ -153,11 +157,11 @@
         chatLog.innerHTML += `<div><strong>Agent:</strong> ${formattedReply}</div>`;
         chatLog.scrollTop = chatLog.scrollHeight;
       } catch (err) {
-        chatLog.innerHTML += `<div><strong>Agent:</strong> ⚠️ Couldn’t reach the setup server. Try again later.</div>`;
-        console.warn(err);
+        const loader = document.getElementById("typing-indicator");
+        if (loader) loader.remove();
+        chatLog.innerHTML += `<div><strong>Agent:</strong> ⚠️ Couldn't reach the setup server. Try again later.</div>`;
+        console.error("Setup error:", err);
       }
-
-      input.value = "";
     }
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -172,7 +176,7 @@
         }
       });
 
-      document.getElementById("chat-log").innerHTML = `<div><strong>Agent:</strong> Hi, I’m your setup agent.<br>Unless you have any questions, please provide your website address to start setting up your chatbot.</div>`;
+      document.getElementById("chat-log").innerHTML = `<div><strong>Agent:</strong> Hi, I'm your setup agent.<br>Unless you have any questions, please provide your website address to start setting up your chatbot.</div>`;
     });
   </script>
 </body>
