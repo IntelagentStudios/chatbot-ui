@@ -1,3 +1,4 @@
+
 (function() {
   // Get the site key from the script tag
   const script = document.currentScript;
@@ -15,15 +16,19 @@
   // Webhook URL
   const webhookUrl = 'https://intelagentchatbotn8n.up.railway.app/webhook/chatbot';
 
-  // Add styles (your original beautiful design)
+  // Add styles with updated font and semi-transparent background
   const style = document.createElement('style');
   style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+    
     .intelagent-chat-button {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background-color: #ffffffcc;
-      border: 2px solid #ccc;
+      background-color: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
       width: 64px;
       height: 64px;
@@ -31,7 +36,7 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       z-index: 1000000;
       transition: transform 0.2s;
     }
@@ -49,23 +54,27 @@
       right: 24px;
       width: 320px;
       max-height: 480px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       display: none;
       flex-direction: column;
       overflow: hidden;
       z-index: 999999;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Varela Round', sans-serif;
     }
     .intelagent-chat-header {
-      background-color: #f5f5f5;
+      background-color: rgba(245, 245, 245, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       padding: 12px 16px;
       font-size: 18px;
       color: #333;
       font-weight: 600;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid rgba(224, 224, 224, 0.5);
       text-transform: capitalize;
     }
     .intelagent-chat-messages {
@@ -80,15 +89,15 @@
       width: 6px;
     }
     .intelagent-chat-messages::-webkit-scrollbar-track {
-      background: #f1f1f1;
+      background: rgba(241, 241, 241, 0.5);
       border-radius: 3px;
     }
     .intelagent-chat-messages::-webkit-scrollbar-thumb {
-      background: #888;
+      background: rgba(136, 136, 136, 0.5);
       border-radius: 3px;
     }
     .intelagent-chat-messages::-webkit-scrollbar-thumb:hover {
-      background: #555;
+      background: rgba(85, 85, 85, 0.7);
     }
     .intelagent-message {
       margin: 8px 0;
@@ -108,12 +117,12 @@
       word-wrap: break-word;
     }
     .intelagent-message.user .intelagent-message-content {
-      background: #333;
+      background: rgba(51, 51, 51, 0.9);
       color: white;
       border-bottom-right-radius: 4px;
     }
     .intelagent-message.bot .intelagent-message-content {
-      background: #f1f1f1;
+      background: rgba(241, 241, 241, 0.8);
       color: #333;
       border-bottom-left-radius: 4px;
     }
@@ -133,33 +142,34 @@
     }
     .intelagent-chat-input {
       display: flex;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid rgba(224, 224, 224, 0.5);
       padding: 8px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.8);
     }
     .intelagent-chat-input input {
       flex-grow: 1;
       padding: 8px 12px;
-      border: 1px solid #ccc;
+      border: 1px solid rgba(204, 204, 204, 0.5);
       border-radius: 8px;
       font-size: 14px;
       outline: none;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Varela Round', sans-serif;
+      background: rgba(255, 255, 255, 0.7);
     }
     .intelagent-chat-input input:focus {
-      border-color: #999;
+      border-color: rgba(153, 153, 153, 0.8);
     }
     .intelagent-chat-footer {
       font-size: 10px;
       text-align: center;
       color: #aaa;
       padding: 6px;
-      background: #fafafa;
+      background: rgba(250, 250, 250, 0.8);
     }
     .intelagent-typing-indicator {
       display: inline-block;
       padding: 8px 12px;
-      background: #f1f1f1;
+      background: rgba(241, 241, 241, 0.8);
       border-radius: 12px;
       border-bottom-left-radius: 4px;
       margin: 8px 0;
@@ -169,7 +179,7 @@
       width: 8px;
       height: 8px;
       margin: 0 2px;
-      background: #999;
+      background: rgba(153, 153, 153, 0.8);
       border-radius: 50%;
       animation: intelagent-blink 1.4s infinite both;
     }
@@ -190,7 +200,7 @@
       }
     }
     pre {
-      background: #f4f4f4;
+      background: rgba(244, 244, 244, 0.8);
       padding: 8px;
       border-radius: 6px;
       overflow-x: auto;
@@ -213,7 +223,7 @@
     <div class="intelagent-chat-messages" id="intelagent-messages">
       <div class="intelagent-message bot">
         <div class="intelagent-message-content">
-          <strong>Bot</strong>
+          <strong>Virtual Assistant</strong>
           Hello! How can I help you today?
         </div>
       </div>
@@ -250,6 +260,22 @@
   function removeTypingIndicator() {
     const indicator = document.getElementById('typing-indicator');
     if (indicator) indicator.remove();
+  }
+
+  // Improved scroll function that scrolls to the top of new messages
+  function scrollToMessage(messageElement) {
+    const messagesDiv = document.getElementById('intelagent-messages');
+    const messageTop = messageElement.offsetTop;
+    const containerHeight = messagesDiv.clientHeight;
+    const messageHeight = messageElement.clientHeight;
+    
+    // If the message fits in view, scroll to show it at the top with some padding
+    if (messageHeight < containerHeight) {
+      messagesDiv.scrollTop = messageTop - 16; // 16px padding from top
+    } else {
+      // If message is longer than container, just scroll to top of message
+      messagesDiv.scrollTop = messageTop;
+    }
   }
 
   // Send message function
@@ -298,12 +324,14 @@
       botMsgDiv.className = 'intelagent-message bot';
       botMsgDiv.innerHTML = `
         <div class="intelagent-message-content">
-          <strong>Bot</strong>
+          <strong>Virtual Assistant</strong>
           ${formattedResponse}
         </div>
       `;
       messagesDiv.appendChild(botMsgDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      
+      // Scroll to the top of the new message instead of the bottom
+      scrollToMessage(botMsgDiv);
 
     } catch (error) {
       removeTypingIndicator();
@@ -313,12 +341,12 @@
       errorDiv.className = 'intelagent-message bot';
       errorDiv.innerHTML = `
         <div class="intelagent-message-content">
-          <strong>Bot</strong>
+          <strong>Virtual Assistant</strong>
           Sorry, I'm having trouble connecting to the chat service. Please try again later.
         </div>
       `;
       messagesDiv.appendChild(errorDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      scrollToMessage(errorDiv);
     }
   }
 
