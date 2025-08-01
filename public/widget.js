@@ -1,4 +1,3 @@
-
 (function() {
   // Get the site key from the script tag
   const script = document.currentScript;
@@ -54,12 +53,12 @@
       right: 24px;
       width: 320px;
       max-height: 480px;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
       display: none;
       flex-direction: column;
       overflow: hidden;
@@ -142,11 +141,12 @@
     }
     .intelagent-chat-input {
       display: flex;
-      border-top: 1px solid rgba(224, 224, 224, 0.5);
+      border-top: 1px solid rgba(224, 224, 224, 0.3);
       padding: 8px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.5);
+      min-height: 52px;
     }
-    .intelagent-chat-input input {
+    .intelagent-chat-input textarea {
       flex-grow: 1;
       padding: 8px 12px;
       border: 1px solid rgba(204, 204, 204, 0.5);
@@ -155,8 +155,13 @@
       outline: none;
       font-family: 'Varela Round', sans-serif;
       background: rgba(255, 255, 255, 0.7);
+      resize: none;
+      min-height: 36px;
+      max-height: 120px;
+      overflow-y: auto;
+      line-height: 1.4;
     }
-    .intelagent-chat-input input:focus {
+    .intelagent-chat-input textarea:focus {
       border-color: rgba(153, 153, 153, 0.8);
     }
     .intelagent-chat-footer {
@@ -229,7 +234,7 @@
       </div>
     </div>
     <div class="intelagent-chat-input">
-      <input type="text" id="intelagent-input" placeholder="Type your message..." />
+      <textarea id="intelagent-input" placeholder="Type your message..." rows="1"></textarea>
     </div>
     <div class="intelagent-chat-footer">Powered by Intelagent Studios</div>
   `;
@@ -350,13 +355,28 @@
     }
   }
 
+  // Auto-resize textarea function
+  function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+  }
+
   // Handle input
-  chatBox.querySelector('#intelagent-input').addEventListener('keypress', async (e) => {
-    if (e.key === 'Enter') {
-      const input = e.target;
-      const message = input.value.trim();
+  const inputTextarea = chatBox.querySelector('#intelagent-input');
+  
+  // Auto-resize on input
+  inputTextarea.addEventListener('input', function() {
+    autoResizeTextarea(this);
+  });
+  
+  // Handle enter key - send on Enter, new line on Shift+Enter
+  inputTextarea.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const message = e.target.value.trim();
       if (message) {
-        input.value = '';
+        e.target.value = '';
+        autoResizeTextarea(e.target);
         await sendMessage(message);
       }
     }
