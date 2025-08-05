@@ -8,24 +8,32 @@
     return;
   }
 
-  // Generate/retrieve session ID
-  const sessionId = localStorage.getItem('intelagent_session_id') || `sess_${Math.random().toString(36).substring(2, 10)}`;
-  localStorage.setItem('intelagent_session_id', sessionId);
-  
-  // Check if widget already exists (for page navigation)
-  if (window.intelagentChatInitialized) {
+  // Check if widget already exists
+  if (document.getElementById('intelagent-chat-widget-loader')) {
     return;
   }
-  window.intelagentChatInitialized = true;
-  
-  // Webhook URL
-  const webhookUrl = 'https://intelagentchatbotn8n.up.railway.app/webhook/chatbot';
 
-  // Add styles with improved spacing and text size
-  const style = document.createElement('style');
-  style.textContent = `
+  // Create a single script that loads the widget in an iframe
+  const widgetLoader = document.createElement('script');
+  widgetLoader.id = 'intelagent-chat-widget-loader';
+  
+  // Create the widget HTML with ALL your existing styles
+  const widgetHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      overflow: hidden;
+    }
+    
+    /* ALL YOUR EXISTING STYLES - EXACTLY AS THEY ARE */
     .intelagent-chat-button {
       position: fixed;
       bottom: 28px;
@@ -302,321 +310,371 @@
         bottom: 16px;
       }
     }
+  </style>
+</head>
+<body>
+  <script>
+    // Your entire widget code goes here
+    const siteKey = '${siteKey}';
+    const sessionId = localStorage.getItem('intelagent_session_id') || 'sess_' + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem('intelagent_session_id', sessionId);
+    
+    const webhookUrl = 'https://intelagentchatbotn8n.up.railway.app/webhook/chatbot';
+
+    // Load chat history from localStorage
+    function loadChatHistory() {
+      const savedHistory = localStorage.getItem('intelagent_chat_history');
+      return savedHistory ? JSON.parse(savedHistory) : [];
+    }
+
+    // Save chat history to localStorage
+    function saveChatHistory(messages) {
+      localStorage.setItem('intelagent_chat_history', JSON.stringify(messages));
+    }
+
+    // Clear chat history
+    function clearChatHistory() {
+      localStorage.removeItem('intelagent_chat_history');
+      chatHistory = [];
+    }
+
+    let chatHistory = loadChatHistory();
+    let isChatOpen = false;
+
+    // Create chat button
+    const chatButton = document.createElement('div');
+    chatButton.className = 'intelagent-chat-button';
+    chatButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
+
+    // Create chat box
+    const chatBox = document.createElement('div');
+    chatBox.className = 'intelagent-chat-box';
+    chatBox.innerHTML = \`
+      <div class="intelagent-chat-header">
+        <span>Chat Assistant</span>
+        <button class="intelagent-close-button" aria-label="Close chat">×</button>
+      </div>
+      <div class="intelagent-chat-messages" id="intelagent-messages"></div>
+      <div class="intelagent-chat-input">
+        <textarea id="intelagent-input" placeholder="Type your message..." rows="1"></textarea>
+        <button class="intelagent-send-button" id="intelagent-send" aria-label="Send message">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="intelagent-chat-footer">Powered by Intelagent Studios</div>
+    \`;
+
+    // Function to render all messages
+    function renderMessages() {
+      const messagesDiv = document.getElementById('intelagent-messages');
+      messagesDiv.innerHTML = '';
+      
+      // Add initial bot message if no history
+      if (chatHistory.length === 0) {
+        const initialMsg = {
+          type: 'bot',
+          content: 'How can I help you today?',
+          timestamp: new Date().toISOString()
+        };
+        chatHistory.push(initialMsg);
+        saveChatHistory(chatHistory);
+      }
+      
+      // Render all messages
+      chatHistory.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'intelagent-message ' + msg.type;
+        msgDiv.innerHTML = \`
+          <div class="intelagent-message-content">
+            <strong>\${msg.type === 'user' ? 'You' : 'Assistant'}</strong>
+            \${msg.content}
+          </div>
+        \`;
+        messagesDiv.appendChild(msgDiv);
+      });
+      
+      // Scroll to bottom after rendering
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Toggle chat visibility
+    function toggleChat() {
+      isChatOpen = !isChatOpen;
+      chatBox.style.display = isChatOpen ? 'flex' : 'none';
+      if (isChatOpen) {
+        renderMessages();
+        document.getElementById('intelagent-input').focus();
+      }
+      // Notify parent window
+      window.parent.postMessage({ type: 'chatToggled', isOpen: isChatOpen }, '*');
+    }
+
+    chatButton.addEventListener('click', toggleChat);
+    
+    // Close button functionality
+    const closeButton = chatBox.querySelector('.intelagent-close-button');
+    closeButton.addEventListener('click', toggleChat);
+
+    // Typing indicator functions
+    function showTypingIndicator() {
+      const messagesDiv = document.getElementById('intelagent-messages');
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'intelagent-message bot';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = \`
+        <div class="intelagent-typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      \`;
+      messagesDiv.appendChild(typingDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) indicator.remove();
+    }
+
+    // Scroll to message function
+    function scrollToMessage(messageElement) {
+      const messagesDiv = document.getElementById('intelagent-messages');
+      const messageTop = messageElement.offsetTop;
+      const containerHeight = messagesDiv.clientHeight;
+      const messageHeight = messageElement.clientHeight;
+      
+      if (messageHeight < containerHeight) {
+        messagesDiv.scrollTop = messageTop - 24;
+      } else {
+        messagesDiv.scrollTop = messageTop;
+      }
+    }
+
+    // Send message function
+    async function sendMessage(message) {
+      const messagesDiv = document.getElementById('intelagent-messages');
+      
+      // Add user message to history
+      const userMsg = {
+        type: 'user',
+        content: message,
+        timestamp: new Date().toISOString()
+      };
+      chatHistory.push(userMsg);
+      saveChatHistory(chatHistory);
+      
+      // Add user message to UI
+      const userMsgDiv = document.createElement('div');
+      userMsgDiv.className = 'intelagent-message user';
+      userMsgDiv.innerHTML = \`
+        <div class="intelagent-message-content">
+          <strong>You</strong>
+          \${message}
+        </div>
+      \`;
+      messagesDiv.appendChild(userMsgDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      // Disable input while processing
+      const inputTextarea = document.getElementById('intelagent-input');
+      const sendButton = document.getElementById('intelagent-send');
+      inputTextarea.disabled = true;
+      sendButton.disabled = true;
+
+      // Show typing indicator
+      showTypingIndicator();
+
+      try {
+        // Build chat history string for context
+        const historyString = chatHistory.slice(-10).map(msg => 
+          (msg.type === 'user' ? 'User' : 'Assistant') + ': ' + msg.content
+        ).join('\\n');
+
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message,
+            session_id: sessionId,
+            site_key: siteKey,
+            chat_history: historyString
+          })
+        });
+
+        const data = await response.json();
+        removeTypingIndicator();
+
+        // Add bot response with formatting
+        const botResponse = data.message || data.chatbot_response || 'I apologize, but I encountered an error processing your request.';
+        const formattedResponse = botResponse
+          .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/\`\`\`html\\n?([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
+          .replace(/\`\`\`([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
+          .replace(/(https?:\\/\\/[^\\s<]+)/g, '<a href="$1" target="_blank">$1</a>')
+          .replace(/\\n/g, '<br>');
+
+        // Add bot message to history
+        const botMsg = {
+          type: 'bot',
+          content: formattedResponse,
+          timestamp: new Date().toISOString()
+        };
+        chatHistory.push(botMsg);
+        saveChatHistory(chatHistory);
+
+        const botMsgDiv = document.createElement('div');
+        botMsgDiv.className = 'intelagent-message bot';
+        botMsgDiv.innerHTML = \`
+          <div class="intelagent-message-content">
+            <strong>Assistant</strong>
+            \${formattedResponse}
+          </div>
+        \`;
+        messagesDiv.appendChild(botMsgDiv);
+        
+        // Scroll to the top of the new message
+        scrollToMessage(botMsgDiv);
+
+      } catch (error) {
+        removeTypingIndicator();
+        console.error('IntelagentChat Error:', error);
+        
+        const errorMsg = {
+          type: 'bot',
+          content: 'Sorry, I\\'m having trouble connecting to the chat service. Please try again later.',
+          timestamp: new Date().toISOString()
+        };
+        chatHistory.push(errorMsg);
+        saveChatHistory(chatHistory);
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'intelagent-message bot';
+        errorDiv.innerHTML = \`
+          <div class="intelagent-message-content">
+            <strong>Assistant</strong>
+            \${errorMsg.content}
+          </div>
+        \`;
+        messagesDiv.appendChild(errorDiv);
+        scrollToMessage(errorDiv);
+      } finally {
+        // Re-enable input
+        inputTextarea.disabled = false;
+        sendButton.disabled = false;
+        inputTextarea.focus();
+      }
+    }
+
+    // Auto-resize textarea function
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    // Handle input
+    const inputTextarea = chatBox.querySelector('#intelagent-input');
+    const sendButton = chatBox.querySelector('#intelagent-send');
+    
+    // Auto-resize on input
+    inputTextarea.addEventListener('input', function() {
+      autoResizeTextarea(this);
+    });
+    
+    // Send button click
+    sendButton.addEventListener('click', async () => {
+      const message = inputTextarea.value.trim();
+      if (message) {
+        inputTextarea.value = '';
+        autoResizeTextarea(inputTextarea);
+        await sendMessage(message);
+      }
+    });
+    
+    // Handle enter key
+    inputTextarea.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const message = e.target.value.trim();
+        if (message) {
+          e.target.value = '';
+          autoResizeTextarea(e.target);
+          await sendMessage(message);
+        }
+      }
+    });
+
+    // Append elements to page
+    document.body.appendChild(chatButton);
+    document.body.appendChild(chatBox);
+
+    // Check if should be open on load
+    window.addEventListener('message', (e) => {
+      if (e.data.type === 'restoreChat' && e.data.isOpen) {
+        isChatOpen = false; // Set to false so toggle will open it
+        toggleChat();
+      }
+    });
+
+    // Let parent know we're ready
+    window.parent.postMessage({ type: 'chatReady' }, '*');
+  </script>
+</body>
+</html>
+  `;
+
+  // Create styles for iframe container
+  const style = document.createElement('style');
+  style.textContent = `
+    #intelagent-chat-iframe-container {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999999;
+    }
+    #intelagent-chat-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      pointer-events: all;
+    }
   `;
   document.head.appendChild(style);
 
-  // Load chat history from localStorage
-  function loadChatHistory() {
-    const savedHistory = localStorage.getItem('intelagent_chat_history');
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  }
-
-  // Save chat history to localStorage
-  function saveChatHistory(messages) {
-    localStorage.setItem('intelagent_chat_history', JSON.stringify(messages));
-  }
-
-  // Clear chat history
-  function clearChatHistory() {
-    localStorage.removeItem('intelagent_chat_history');
-    chatHistory = [];
-  }
-
-  let chatHistory = loadChatHistory();
-
-  // Create chat button with your original icon
-  const chatButton = document.createElement('div');
-  chatButton.className = 'intelagent-chat-button';
-  chatButton.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`;
-
-  // Create chat box
-  const chatBox = document.createElement('div');
-  chatBox.className = 'intelagent-chat-box';
-  chatBox.innerHTML = `
-    <div class="intelagent-chat-header">
-      <span>Chat Assistant</span>
-      <button class="intelagent-close-button" aria-label="Close chat">×</button>
-    </div>
-    <div class="intelagent-chat-messages" id="intelagent-messages"></div>
-    <div class="intelagent-chat-input">
-      <textarea id="intelagent-input" placeholder="Type your message..." rows="1"></textarea>
-      <button class="intelagent-send-button" id="intelagent-send" aria-label="Send message">
-        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
-    </div>
-    <div class="intelagent-chat-footer">Powered by Intelagent Studios</div>
-  `;
-
-  // Function to render all messages
-  function renderMessages() {
-    const messagesDiv = document.getElementById('intelagent-messages');
-    messagesDiv.innerHTML = '';
-    
-    // Add initial bot message if no history
-    if (chatHistory.length === 0) {
-      const initialMsg = {
-        type: 'bot',
-        content: 'How can I help you today?',
-        timestamp: new Date().toISOString()
-      };
-      chatHistory.push(initialMsg);
-      saveChatHistory(chatHistory);
-    }
-    
-    // Render all messages
-    chatHistory.forEach(msg => {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `intelagent-message ${msg.type}`;
-      msgDiv.innerHTML = `
-        <div class="intelagent-message-content">
-          <strong>${msg.type === 'user' ? 'You' : 'Assistant'}</strong>
-          ${msg.content}
-        </div>
-      `;
-      messagesDiv.appendChild(msgDiv);
-    });
-    
-    // Scroll to bottom after rendering
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-
-  // Toggle chat visibility
-  let isChatOpen = false;
+  // Create iframe container
+  const iframeContainer = document.createElement('div');
+  iframeContainer.id = 'intelagent-chat-iframe-container';
   
-  function toggleChat() {
-    isChatOpen = !isChatOpen;
-    chatBox.style.display = isChatOpen ? 'flex' : 'none';
-    if (isChatOpen) {
-      renderMessages();
-      document.getElementById('intelagent-input').focus();
-    }
-  }
-
-  chatButton.addEventListener('click', toggleChat);
+  // Create iframe
+  const iframe = document.createElement('iframe');
+  iframe.id = 'intelagent-chat-iframe';
+  iframe.srcdoc = widgetHTML;
   
-  // Close button functionality
-  const closeButton = chatBox.querySelector('.intelagent-close-button');
-  closeButton.addEventListener('click', toggleChat);
+  iframeContainer.appendChild(iframe);
+  document.body.appendChild(iframeContainer);
 
-  // Add typing indicator
-  function showTypingIndicator() {
-    const messagesDiv = document.getElementById('intelagent-messages');
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'intelagent-message bot';
-    typingDiv.id = 'typing-indicator';
-    typingDiv.innerHTML = `
-      <div class="intelagent-typing-indicator">
-        <span></span><span></span><span></span>
-      </div>
-    `;
-    messagesDiv.appendChild(typingDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
+  // Track chat state
+  let chatIsOpen = localStorage.getItem('intelagent_chat_open') === 'true';
 
-  function removeTypingIndicator() {
-    const indicator = document.getElementById('typing-indicator');
-    if (indicator) indicator.remove();
-  }
-
-  // Improved scroll function that scrolls to the top of new messages
-  function scrollToMessage(messageElement) {
-    const messagesDiv = document.getElementById('intelagent-messages');
-    const messageTop = messageElement.offsetTop;
-    const containerHeight = messagesDiv.clientHeight;
-    const messageHeight = messageElement.clientHeight;
-    
-    // If the message fits in view, scroll to show it at the top with some padding
-    if (messageHeight < containerHeight) {
-      messagesDiv.scrollTop = messageTop - 24; // 24px padding from top
-    } else {
-      // If message is longer than container, just scroll to top of message
-      messagesDiv.scrollTop = messageTop;
-    }
-  }
-
-  // Send message function
-  async function sendMessage(message) {
-    const messagesDiv = document.getElementById('intelagent-messages');
-    
-    // Add user message to history
-    const userMsg = {
-      type: 'user',
-      content: message,
-      timestamp: new Date().toISOString()
-    };
-    chatHistory.push(userMsg);
-    saveChatHistory(chatHistory);
-    
-    // Add user message to UI
-    const userMsgDiv = document.createElement('div');
-    userMsgDiv.className = 'intelagent-message user';
-    userMsgDiv.innerHTML = `
-      <div class="intelagent-message-content">
-        <strong>You</strong>
-        ${message}
-      </div>
-    `;
-    messagesDiv.appendChild(userMsgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-    // Disable input while processing
-    const inputTextarea = document.getElementById('intelagent-input');
-    const sendButton = document.getElementById('intelagent-send');
-    inputTextarea.disabled = true;
-    sendButton.disabled = true;
-
-    // Show typing indicator
-    showTypingIndicator();
-
-    try {
-      // Build chat history string for context
-      const historyString = chatHistory.slice(-10).map(msg => 
-        `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-      ).join('\n');
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: message,
-          session_id: sessionId,
-          site_key: siteKey,
-          chat_history: historyString
-        })
-      });
-
-      const data = await response.json();
-      removeTypingIndicator();
-
-      // Add bot response with formatting and clickable links
-      const botResponse = data.message || data.chatbot_response || 'I apologize, but I encountered an error processing your request.';
-      const formattedResponse = botResponse
-        .replace(/</g, '&lt;').replace(/>/g, '&gt;')  // Escape HTML first
-        .replace(/```html\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-        .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>')  // Make URLs clickable
-        .replace(/\n/g, '<br>');
-
-      // Add bot message to history
-      const botMsg = {
-        type: 'bot',
-        content: formattedResponse,
-        timestamp: new Date().toISOString()
-      };
-      chatHistory.push(botMsg);
-      saveChatHistory(chatHistory);
-
-      const botMsgDiv = document.createElement('div');
-      botMsgDiv.className = 'intelagent-message bot';
-      botMsgDiv.innerHTML = `
-        <div class="intelagent-message-content">
-          <strong>Assistant</strong>
-          ${formattedResponse}
-        </div>
-      `;
-      messagesDiv.appendChild(botMsgDiv);
-      
-      // Scroll to the top of the new message
-      scrollToMessage(botMsgDiv);
-
-    } catch (error) {
-      removeTypingIndicator();
-      console.error('IntelagentChat Error:', error);
-      
-      const errorMsg = {
-        type: 'bot',
-        content: 'Sorry, I\'m having trouble connecting to the chat service. Please try again later.',
-        timestamp: new Date().toISOString()
-      };
-      chatHistory.push(errorMsg);
-      saveChatHistory(chatHistory);
-      
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'intelagent-message bot';
-      errorDiv.innerHTML = `
-        <div class="intelagent-message-content">
-          <strong>Assistant</strong>
-          ${errorMsg.content}
-        </div>
-      `;
-      messagesDiv.appendChild(errorDiv);
-      scrollToMessage(errorDiv);
-    } finally {
-      // Re-enable input
-      inputTextarea.disabled = false;
-      sendButton.disabled = false;
-      inputTextarea.focus();
-    }
-  }
-
-  // Auto-resize textarea function
-  function autoResizeTextarea(textarea) {
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-  }
-
-  // Handle input
-  const inputTextarea = chatBox.querySelector('#intelagent-input');
-  const sendButton = chatBox.querySelector('#intelagent-send');
-  
-  // Auto-resize on input
-  inputTextarea.addEventListener('input', function() {
-    autoResizeTextarea(this);
-  });
-  
-  // Send button click
-  sendButton.addEventListener('click', async () => {
-    const message = inputTextarea.value.trim();
-    if (message) {
-      inputTextarea.value = '';
-      autoResizeTextarea(inputTextarea);
-      await sendMessage(message);
-    }
-  });
-  
-  // Handle enter key - send on Enter, new line on Shift+Enter
-  inputTextarea.addEventListener('keydown', async (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const message = e.target.value.trim();
-      if (message) {
-        e.target.value = '';
-        autoResizeTextarea(e.target);
-        await sendMessage(message);
-      }
+  // Listen for messages from iframe
+  window.addEventListener('message', (e) => {
+    if (e.data.type === 'chatToggled') {
+      chatIsOpen = e.data.isOpen;
+      localStorage.setItem('intelagent_chat_open', chatIsOpen.toString());
+    } else if (e.data.type === 'chatReady' && chatIsOpen) {
+      // Restore chat state if it was open
+      iframe.contentWindow.postMessage({ type: 'restoreChat', isOpen: true }, '*');
     }
   });
 
-  // Add keyboard shortcut to open chat (Ctrl/Cmd + /)
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-      e.preventDefault();
-      toggleChat();
-    }
-  });
-
-  // Add method to clear chat to window object
+  // Global function to clear chat
   window.clearIntelagentChat = function() {
     if (confirm('Are you sure you want to clear the chat history?')) {
-      clearChatHistory();
-      renderMessages();
+      localStorage.removeItem('intelagent_chat_history');
+      localStorage.removeItem('intelagent_chat_open');
+      location.reload();
     }
-  };
-
-  // Append elements to page
-  document.body.appendChild(chatButton);
-  document.body.appendChild(chatBox);
-  
-  // Restore chat state if it was open
-  const wasChatOpen = localStorage.getItem('intelagent_chat_open') === 'true';
-  if (wasChatOpen) {
-    toggleChat();
-  }
-  
-  // Save chat state on toggle
-  const originalToggle = toggleChat;
-  toggleChat = function() {
-    originalToggle();
-    localStorage.setItem('intelagent_chat_open', isChatOpen.toString());
   };
 })();
