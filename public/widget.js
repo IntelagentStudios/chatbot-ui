@@ -621,17 +621,20 @@
 </html>
   `;
 
-  // Create styles for iframe container
+  // Create styles for iframe container - FIXED VERSION
   const style = document.createElement('style');
   style.textContent = `
     #intelagent-chat-iframe-container {
       position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 100%;
-      height: 100%;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      height: 100px;
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 40px);
       pointer-events: none;
       z-index: 999999;
+      transition: width 0.3s ease, height 0.3s ease;
     }
     #intelagent-chat-iframe {
       width: 100%;
@@ -639,6 +642,16 @@
       border: none;
       background: transparent;
       pointer-events: all;
+    }
+    @media (max-width: 480px) {
+      #intelagent-chat-iframe-container.chat-open {
+        bottom: 0;
+        right: 0;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100%;
+        max-height: 100%;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -663,9 +676,25 @@
     if (e.data.type === 'chatToggled') {
       chatIsOpen = e.data.isOpen;
       localStorage.setItem('intelagent_chat_open', chatIsOpen.toString());
-    } else if (e.data.type === 'chatReady' && chatIsOpen) {
-      // Restore chat state if it was open
-      iframe.contentWindow.postMessage({ type: 'restoreChat', isOpen: true }, '*');
+      
+      // Resize iframe container based on chat state
+      if (chatIsOpen) {
+        iframeContainer.style.width = '450px';
+        iframeContainer.style.height = '700px';
+      } else {
+        iframeContainer.style.width = '100px';
+        iframeContainer.style.height = '100px';
+      }
+    } else if (e.data.type === 'chatReady') {
+      // Set initial size based on chat state
+      if (chatIsOpen) {
+        iframeContainer.style.width = '450px';
+        iframeContainer.style.height = '700px';
+        iframe.contentWindow.postMessage({ type: 'restoreChat', isOpen: true }, '*');
+      } else {
+        iframeContainer.style.width = '100px';
+        iframeContainer.style.height = '100px';
+      }
     }
   });
 
