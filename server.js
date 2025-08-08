@@ -14,6 +14,20 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+// ✅ Serve widget.js with proper headers (MOVED TO CORRECT POSITION)
+app.get('/widget.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.sendFile(path.join(__dirname, 'public', 'widget.js'));
+});
+
+// ✅ Also add a CDN-style route if needed
+app.get('/cdn/widget.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.sendFile(path.join(__dirname, 'public', 'widget.js'));
+});
+
 // ✅ Proxy route to forward setup messages to the N8N webhook
 app.post('/api/setup', async (req, res) => {
   try {
@@ -84,7 +98,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    service: 'Intelagent Setup Proxy'
+    service: 'Intelagent Setup Proxy',
+    widgetUrl: '/widget.js'
   });
 });
 
@@ -103,7 +118,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Catch-all fallback route
+// Catch-all fallback route (MUST BE LAST!)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -111,6 +126,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Intelagent Setup Proxy server running on port ${PORT}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/health`);
+  console.log(`📦 Widget URL: http://localhost:${PORT}/widget.js`);
   console.log(`🔧 Setup page: http://localhost:${PORT}/setup_agent`);
 });
 
