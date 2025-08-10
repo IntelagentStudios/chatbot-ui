@@ -89,7 +89,7 @@
       font-size: 20px;
       color: #1a1a1a;
       font-weight: 600;
-      border-bottom: 1px solid rgba(230, 230, 230, 0.3);
+      border-bottom: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -195,7 +195,7 @@
     }
     .intelagent-chat-input {
       display: flex;
-      border-top: 1px solid rgba(230, 230, 230, 0.3);
+      border-top: none;
       padding: 16px;
       background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
@@ -260,7 +260,7 @@
       background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(230, 230, 230, 0.2);
+      border-top: none;
       line-height: 1.4;
     }
     .intelagent-chat-footer {
