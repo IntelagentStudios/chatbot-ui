@@ -446,10 +446,17 @@
       messagesDiv.scrollTop = relativeTop - 20;
     }
 
-    // Process markdown links to HTML
+    // Process markdown links to HTML - opens in parent window
     function processMarkdownLinks(text) {
-      // Convert markdown links [text](url) to HTML
-      return text.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/g, '<a href="$2" target="_blank">$1</a>');
+      // Convert markdown links [text](url) to HTML that opens in parent
+      return text.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/g, function(match, linkText, url) {
+        // For relative URLs, make them open in parent window
+        if (url.startsWith('/') || !url.startsWith('http')) {
+          return '<a href="' + url + '" onclick="window.parent.location.href=\\'' + url + '\\'; return false;">' + linkText + '</a>';
+        }
+        // For external URLs, open in new tab
+        return '<a href="' + url + '" target="_blank">' + linkText + '</a>';
+      });
     }
 
     // Send message function
