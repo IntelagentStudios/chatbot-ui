@@ -68,7 +68,7 @@
       right: 28px;
       width: 380px;
       max-height: 600px;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(24px) saturate(150%);
       -webkit-backdrop-filter: blur(24px) saturate(150%);
       border: 1px solid rgba(255, 255, 255, 0.3);
@@ -82,7 +82,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .intelagent-chat-header {
-      background-color: rgba(248, 248, 248, 0.6);
+      background-color: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       padding: 20px 24px;
@@ -121,6 +121,7 @@
       color: #333;
       line-height: 1.6;
       scroll-behavior: smooth;
+      background: transparent;
     }
     .intelagent-chat-messages::-webkit-scrollbar {
       width: 6px;
@@ -196,7 +197,7 @@
       display: flex;
       border-top: 1px solid rgba(230, 230, 230, 0.3);
       padding: 16px;
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       min-height: 60px;
@@ -251,15 +252,25 @@
       height: 20px;
       fill: white;
     }
+    .intelagent-ai-disclaimer {
+      font-size: 10px;
+      text-align: center;
+      color: #888;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(230, 230, 230, 0.2);
+      line-height: 1.4;
+    }
     .intelagent-chat-footer {
       font-size: 11px;
       text-align: center;
       color: #999;
-      padding: 12px;
-      background: rgba(250, 250, 250, 0.4);
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(230, 230, 230, 0.2);
     }
     .intelagent-typing-indicator {
       display: inline-block;
@@ -366,6 +377,7 @@
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
       </div>
+      <div class="intelagent-ai-disclaimer">AI can make mistakes. Please confirm important information with the company.</div>
       <div class="intelagent-chat-footer">Powered by Intelagent Studios</div>
     \`;
 
