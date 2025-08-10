@@ -435,18 +435,21 @@
       if (indicator) indicator.remove();
     }
 
-    // Scroll to message function
+    // Improved scroll function - scrolls to top of message
     function scrollToMessage(messageElement) {
       const messagesDiv = document.getElementById('intelagent-messages');
-      const messageTop = messageElement.offsetTop;
-      const containerHeight = messagesDiv.clientHeight;
-      const messageHeight = messageElement.clientHeight;
+      const messageRect = messageElement.getBoundingClientRect();
+      const containerRect = messagesDiv.getBoundingClientRect();
+      const relativeTop = messageElement.offsetTop;
       
-      if (messageHeight < containerHeight) {
-        messagesDiv.scrollTop = messageTop - 24;
-      } else {
-        messagesDiv.scrollTop = messageTop;
-      }
+      // Scroll to show the message at the top with some padding
+      messagesDiv.scrollTop = relativeTop - 20;
+    }
+
+    // Process markdown links to HTML
+    function processMarkdownLinks(text) {
+      // Convert markdown links [text](url) to HTML
+      return text.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/g, '<a href="$2" target="_blank">$1</a>');
     }
 
     // Send message function
@@ -486,7 +489,7 @@
       try {
         // Build chat history string for context
         const historyString = chatHistory.slice(-10).map(msg => 
-          (msg.type === 'user' ? 'User' : 'Assistant') + ': ' + msg.content
+          (msg.type === 'user' ? 'User' : 'Assistant') + ': ' + msg.content.replace(/<[^>]*>/g, '')
         ).join('\\n');
 
         const response = await fetch(webhookUrl, {
@@ -505,11 +508,16 @@
 
         // Add bot response with formatting
         const botResponse = data.message || data.chatbot_response || 'I apologize, but I encountered an error processing your request.';
-        const formattedResponse = botResponse
-          .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        
+        // Process the response:
+        // 1. First process markdown links
+        let formattedResponse = processMarkdownLinks(botResponse);
+        
+        // 2. Then handle other formatting
+        formattedResponse = formattedResponse
           .replace(/\`\`\`html\\n?([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
           .replace(/\`\`\`([\\s\\S]*?)\`\`\`/g, '<pre><code>$1</code></pre>')
-          .replace(/(https?:\\/\\/[^\\s<]+)/g, '<a href="$1" target="_blank">$1</a>')
+          .replace(/(https?:\\/\\/[^\\s<]+)(?![^<]*<\\/a>)/g, '<a href="$1" target="_blank">$1</a>')
           .replace(/\\n/g, '<br>');
 
         // Add bot message to history
