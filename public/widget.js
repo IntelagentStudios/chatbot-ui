@@ -82,14 +82,14 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .intelagent-chat-header {
-      background-color: rgba(248, 248, 248, 0.9);
+      background-color: rgba(248, 248, 248, 0.6);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       padding: 20px 24px;
       font-size: 20px;
       color: #1a1a1a;
       font-weight: 600;
-      border-bottom: 1px solid rgba(230, 230, 230, 0.5);
+      border-bottom: 1px solid rgba(230, 230, 230, 0.3);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -194,28 +194,31 @@
     }
     .intelagent-chat-input {
       display: flex;
-      border-top: 1px solid rgba(230, 230, 230, 0.4);
+      border-top: 1px solid rgba(230, 230, 230, 0.3);
       padding: 16px;
-      background: rgba(255, 255, 255, 0.6);
-      min-height: 68px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      min-height: 60px;
       gap: 12px;
       align-items: flex-end;
     }
     .intelagent-chat-input textarea {
       flex-grow: 1;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border: 1px solid rgba(204, 204, 204, 0.4);
       border-radius: 12px;
       font-size: 16px;
       outline: none;
       font-family: 'Inter', sans-serif;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.7);
       resize: none;
-      min-height: 44px;
-      max-height: 120px;
+      min-height: 40px;
+      height: 40px;
+      max-height: 100px;
       overflow-y: auto;
-      line-height: 1.5;
-      transition: border-color 0.2s;
+      line-height: 1.4;
+      transition: border-color 0.2s, background 0.2s;
     }
     .intelagent-chat-input textarea:focus {
       border-color: rgba(100, 100, 100, 0.6);
@@ -253,8 +256,10 @@
       text-align: center;
       color: #999;
       padding: 12px;
-      background: rgba(250, 250, 250, 0.6);
-      border-top: 1px solid rgba(230, 230, 230, 0.3);
+      background: rgba(250, 250, 250, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(230, 230, 230, 0.2);
     }
     .intelagent-typing-indicator {
       display: inline-block;
@@ -593,8 +598,13 @@
 
     // Auto-resize textarea function
     function autoResizeTextarea(textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      textarea.style.height = '40px';  // Reset to base height first
+      const scrollHeight = textarea.scrollHeight;
+      const maxHeight = 100;  // Match the CSS max-height
+      
+      if (scrollHeight > 40) {
+        textarea.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+      }
     }
 
     // Handle input
