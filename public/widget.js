@@ -452,7 +452,7 @@
       return text.replace(/\\[([^\\]]+)\\]\\(([^\\)]+)\\)/g, function(match, linkText, url) {
         // For relative URLs, make them open in parent window
         if (url.startsWith('/') || !url.startsWith('http')) {
-          return '<a href="' + url + '" onclick="window.parent.location.href=\\'' + url + '\\'; return false;">' + linkText + '</a>';
+          return '<a href="#" onclick="event.preventDefault(); window.parent.location.href=\\'' + url + '\\'; return false;" style="color: #0066cc; text-decoration: none; font-weight: 500;">' + linkText + '</a>';
         }
         // For external URLs, open in new tab
         return '<a href="' + url + '" target="_blank">' + linkText + '</a>';
