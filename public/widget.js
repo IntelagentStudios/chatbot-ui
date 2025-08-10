@@ -546,6 +546,18 @@
         \`;
         messagesDiv.appendChild(botMsgDiv);
         
+        // Add click handlers to all links after the message is added to DOM
+        const links = botMsgDiv.querySelectorAll('a');
+        links.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href && !href.startsWith('http') && href !== '#') {
+            link.addEventListener('click', function(e) {
+              e.preventDefault();
+              window.parent.location.href = href;
+            });
+          }
+        });
+        
         // Scroll to the top of the new message
         scrollToMessage(botMsgDiv);
 
